@@ -5,7 +5,11 @@ import { toggleBookmark, toggleLike } from "../../../store/action";
 import { IReduxData } from "../../../store/reducer"
 import React, { memo } from "react";
 import { useStorage, setInStorage } from "../../../utils";
-import { Link as RouterLink } from "react-router-dom"
+import { Link as RouterLink } from "react-router-dom";
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
+import BookmarkIcon from '@mui/icons-material/Bookmark';
 
 interface MovieCardProps {
   data: IReduxData,
@@ -13,33 +17,12 @@ interface MovieCardProps {
   isAuth: boolean
 }
 
+enum BUTTONS {
+  FAVORITE = 'favorite',
+  BOOKMARK = 'bookmark'
+}
+
 export const MovieCard : React.FC<MovieCardProps> = memo(function MovieCard({data, index, isAuth} : MovieCardProps) {
-  const storage = useStorage();
-  const dispatch = useDispatch();
-  const handleLike = (event : React.ChangeEvent<unknown>) => {
-    if (!isAuth) return;
-    const target = event.target as HTMLElement;
-    dispatch(toggleLike(Number(target.id)));
-    setInStorage(storage, target.parentElement?.id, 'favorite');
-  }
-  const handleBookmark = (event : React.ChangeEvent<unknown>) => {
-    if (!isAuth) return;
-    const target = event.target as HTMLElement;
-    dispatch(toggleBookmark(Number(target.id)));
-    setInStorage(storage, target.parentElement?.id, 'bookmark');
-  }
-  const getAuthLike = () => {
-    if (isAuth) {
-      return (data.like ? 'StarActive.svg' : 'Star.svg')
-    }
-    return 'Star.svg';
-  }
-  const getAuthBookmark = () => {
-    if (isAuth) {
-      return (data.bookmark ? 'BookmarkActive.svg' : 'Bookmark.svg')
-    }
-    return 'Bookmark.svg';
-  }
   return (
     <Card sx={{
       display: 'grid',
@@ -50,16 +33,7 @@ export const MovieCard : React.FC<MovieCardProps> = memo(function MovieCard({dat
       gridTemplateRows: '15% 65% 20%',
       margin: "0 5px"
     }}>
-      <CardMedia sx={{
-        gridRowStart: '1',
-        gridRowEnd: '4',
-      }}
-        component='img'
-        height='100%'
-        image={`https://image.tmdb.org/t/p/w500${data.poster_path || data.backdrop_path}`}
-        alt='Movie Picture'
-      >
-      </CardMedia>
+      <MovieImage path={data.poster_path || data.backdrop_path} />
       <Box 
         sx={{
           display: 'flex',
@@ -67,63 +41,140 @@ export const MovieCard : React.FC<MovieCardProps> = memo(function MovieCard({dat
         }}
         id={String(data.id)}
       >
-        <Typography sx={{
+        <MovieRating rating={data.vote_average} />
+        <MovieLike like={data.like} isAuth={isAuth} index={index} />
+        <MovieBookmark bookmark={data.bookmark} isAuth={isAuth} index={index} />
+      </Box>
+      <MovieTitle title={data.title} />
+      <MovieLink id={data.id} />
+    </Card>
+  );
+})
+
+interface IMovieButtons {
+  like?: boolean;
+  bookmark?: boolean;
+  isAuth: boolean;
+  index: number;
+}
+
+const MovieBookmark: React.NamedExoticComponent<IMovieButtons> = memo(function MovieBookmark({ bookmark, isAuth, index}: IMovieButtons) {
+  const dispatch = useDispatch();
+  const storage = useStorage();
+  const handleBookmark = (event : React.ChangeEvent<unknown>) => {
+    if (!isAuth) return;
+    let target = event.target as HTMLElement;
+    if (target.nodeName === 'path') 
+      target = target.parentNode as HTMLElement;
+    dispatch(toggleBookmark(Number(target.id)));
+    setInStorage(storage, target.parentElement?.id, BUTTONS.BOOKMARK);
+  }
+  return (
+    <>
+      {bookmark
+          ? <BookmarkIcon onClick={handleBookmark} fontSize="large" id={String(index)}/>
+          : <BookmarkBorderIcon onClick={handleBookmark} fontSize="large" id={String(index)}/>
+        }
+    </>
+  );
+})
+
+const MovieLike: React.NamedExoticComponent<IMovieButtons> = memo(function MovieLike({ like, isAuth, index}: IMovieButtons) {
+  const dispatch = useDispatch();
+  const storage = useStorage();
+  const handleLike = (event : React.ChangeEvent<unknown>) => {
+    if (!isAuth) return;
+    let target = event.target as HTMLElement;
+    if (target.nodeName === 'path') 
+      target = target.parentNode as HTMLElement;
+    dispatch(toggleLike(Number(target.id)));
+    setInStorage(storage, target.parentElement?.id, BUTTONS.FAVORITE);
+  }
+  return (
+    <>
+      {like
+          ? <FavoriteIcon onClick={handleLike} fontSize="large" id={String(index)} />
+          : <FavoriteBorderIcon onClick={handleLike} fontSize="large" id={String(index)}/>
+        }
+    </>
+  );
+})
+
+interface IMovieLink {
+  id: number;
+}
+
+const MovieLink: React.NamedExoticComponent<IMovieLink> = memo(function MovieLink({id}: IMovieLink) {
+  return (
+    <>
+      <Link sx={{
+        textAlign: 'start',
+        padding: '20px 30px',
+        borderTop: '1px solid black'
+      }}
+        underline="hover"
+        component={RouterLink}
+        to={`/movie/${id}`}
+        key={id}
+      >
+        Подробнее
+      </Link>
+    </>
+  );
+})
+
+interface IMovieImage {
+  path: string | null;
+}
+const MovieImage: React.NamedExoticComponent<IMovieImage> = memo(function MovieImage({path} : IMovieImage) {
+  return (
+    <>
+      <CardMedia sx={{
+        gridRowStart: '1',
+        gridRowEnd: '4',
+        width: 'auto'
+      }}
+        component='img'
+        height='100%'
+        image={`https://image.tmdb.org/t/p/w500${path}`}
+        alt='Movie Picture'
+      >
+      </CardMedia>
+    </>
+  );
+})
+
+interface IMovieRating {
+  rating: number;
+}
+const MovieRating: React.NamedExoticComponent<IMovieRating> = memo(function MovieRating({rating} : IMovieRating) {
+  return (
+    <>
+      <Typography sx={{
           display: 'grid',
-          margin: '13px 10px 10px',
+          margin: '7px 10px',
           verticalAlign: 'center'
         }}>
-          Рэйтинг: {data.vote_average}
+          Рэйтинг: {rating}
         </Typography>
-        <CardMedia sx={{
-          marginTop: '10px',
-          width: '30px',
-          height: '30px',
-          cursor: 'pointer',
-        }}
-          component='img'
-          height='100%'
-          image={getAuthLike()}
-          alt='Like'
-          id={String(index)}
-          onClick={handleLike}
-        >
-        </CardMedia>
-        <CardMedia sx={{
-          margin: '10px',
-          width: '25px',
-          height: '30px',
-          cursor: 'pointer',
-        }}
-          component='img'
-          height='100%'
-          image={getAuthBookmark()}
-          alt='Watch Later'
-          id={String(index)}
-          onClick={handleBookmark}
-        >
-        </CardMedia>
-      </Box>
-      <Typography sx={{
+    </>
+  );
+})
+
+interface IMovieTitle {
+  title: string;
+}
+const MovieTitle: React.NamedExoticComponent<IMovieTitle> = memo(function MovieTitle({title} : IMovieTitle) {
+  return (
+    <>
+     <Typography sx={{
         margin: 'auto 10px',
         gridRowStart: '2',
         gridRowEnd: '3',
         fontWeight: '600',
       }}>
-        {data.title}
+        {title}
       </Typography>
-      <Link sx={{
-        textAlign: 'start',
-        padding: '20px 30px',
-        borderTop: '1px solid black'
-        
-      }}
-        underline="hover"
-        component={RouterLink}
-        to={`/movie/${data.id}`}
-        key={data.id}
-      >
-        Подробнее
-      </Link>
-    </Card>
+    </>
   );
 })
