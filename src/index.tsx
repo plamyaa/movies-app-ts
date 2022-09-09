@@ -16,7 +16,7 @@ root.render(
     <BrowserRouter>
       <Routes>
         <Route path='/' element={<App />}>
-          <Route path='/' element={<Content />}/>
+          <Route path='movies-app-ts/' element={<Content />}/>
           <Route path="movie/:filmId" element={<Details />} />
           <Route path="search" element={<Search />} />
         </Route>

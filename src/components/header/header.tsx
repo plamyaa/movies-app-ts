@@ -35,7 +35,7 @@ export const Header: React.FC = () => {
           color={'#fff'}
           variant={'h6'}
           component={RouterLink}
-          to="/"
+          to="/movies-app-ts"
         >Home</Link>
         <Button sx={{
           marginRight: '20px',
