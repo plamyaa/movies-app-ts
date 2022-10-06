@@ -22,11 +22,10 @@ export const ModalAuth: React.FC<IOpen> = ({ open, handleClose }) => {
     }
     const onSubmit = () : void => {
         if (login === 'login' && password === '0000') {
-            alert('Successful authorization');
             dispatch(toggleAuth());
             handleClose();
         }
-        else alert('Wrong login or password');
+        else alert('Неверный логин или пароль');
     }
     return (
         <Modal
@@ -37,11 +36,11 @@ export const ModalAuth: React.FC<IOpen> = ({ open, handleClose }) => {
         >
             <Box sx={style}>
                 <Typography id="modal-title" variant="h6" component="h2">
-                    Authorisation (login, 0000)
+                    Авторизация (login, 0000)
                 </Typography>
-                <TextField id="outlined-basic" label="Login" variant="outlined" onChange={onLoginChange}/>
-                <TextField id="outlined-basic" label="Password" variant="outlined" type="password" onChange={onPasswordChange}/>
-                <Button onClick={onSubmit}>Submit</Button>
+                <TextField id="outlined-basic" label="Логин" variant="outlined" onChange={onLoginChange}/>
+                <TextField id="outlined-basic" label="Пароль" variant="outlined" type="password" onChange={onPasswordChange}/>
+                <Button onClick={onSubmit}>Войти</Button>
             </Box>
         </Modal>
     );

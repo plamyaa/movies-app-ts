@@ -11,10 +11,8 @@ export const Header: React.FC = () => {
   const dispatch = useDispatch();
   const auth = useSelector<IRootReducer, boolean>(state => state.authToggler.auth);
   const [open, setOpen] = useState(false);
-  const handleOpen = (): void => {
+  const handleOpen = () => 
     auth === true ? dispatch(toggleAuth()) : setOpen(true);
-  };
-  const handleClose = (): void => { setOpen(false) };
   return (
     <Box sx={{
       bgcolor: 'cornflowerblue',
@@ -44,8 +42,8 @@ export const Header: React.FC = () => {
         }}
           variant="outlined"
           onClick={handleOpen}
-        >{(auth ? "Logout" : "Login")}</Button>
-        <ModalAuth open={open} handleClose={handleClose}></ModalAuth>
+        >{(auth ? "Выйти" : "Войти")}</Button>
+        <ModalAuth open={open} handleClose={() => setOpen(false)}></ModalAuth>
       </Box>
 
     </Box>

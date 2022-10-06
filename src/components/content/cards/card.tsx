@@ -1,16 +1,17 @@
 import { Box } from "@mui/system";
 import { Card, CardMedia, Typography, Link } from "@mui/material";
 import { useDispatch } from "react-redux";
-import { toggleBookmark, toggleLike } from "../../../store/action";
+import { toggleAuth, toggleBookmark, toggleLike } from "../../../store/action";
 import { IReduxData } from "../../../store/reducer"
-import React, { memo } from "react";
+import React, { memo, useState } from "react";
 import { useStorage, setInStorage } from "../../../utils";
 import { Link as RouterLink } from "react-router-dom";
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
-
+import Fade from '@mui/material/Fade';
+import { ModalAuth } from "../../header/modalAuth";
 interface MovieCardProps {
   data: IReduxData,
   index: number
@@ -37,7 +38,7 @@ export const MovieCard : React.FC<MovieCardProps> = memo(function MovieCard({dat
       <Box 
         sx={{
           display: 'flex',
-          justifyContent: "space-between",
+          justifyContent: "space-between"
         }}
         id={String(data.id)}
       >
@@ -62,20 +63,45 @@ const MovieBookmark: React.NamedExoticComponent<IMovieButtons> = memo(function M
   const dispatch = useDispatch();
   const storage = useStorage();
   const handleBookmark = (event : React.ChangeEvent<unknown>) => {
-    if (!isAuth) return;
+    if (!isAuth)
+      return handleOpen();
     let target = event.target as HTMLElement;
     if (target.nodeName === 'path') 
-      target = target.parentNode as HTMLElement;
+      target = target.parentNode?.parentNode as HTMLElement;
     dispatch(toggleBookmark(Number(target.id)));
     setInStorage(storage, target.parentElement?.id, BUTTONS.BOOKMARK);
   }
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => 
+    isAuth === true ? dispatch(toggleAuth()) : setOpen(true);
   return (
-    <>
-      {bookmark
-          ? <BookmarkIcon onClick={handleBookmark} fontSize="large" id={String(index)}/>
-          : <BookmarkBorderIcon onClick={handleBookmark} fontSize="large" id={String(index)}/>
+    <Box sx={{position: "relative"}}>
+      <Fade in={bookmark}>
+        {
+          <BookmarkIcon
+            onClick={handleBookmark}
+            fontSize="large"
+            id={String(index)}
+            sx={{cursor: "pointer"}}
+          />
         }
-    </>
+      </Fade>
+      <Fade in={!bookmark}>
+        {
+          <BookmarkBorderIcon
+            onClick={handleBookmark}
+            fontSize="large"
+            id={String(index)}
+            sx={{
+              position: "absolute",
+              right: "0",
+              cursor: "pointer"
+            }}
+          />
+        }
+      </Fade>
+      <ModalAuth open={open} handleClose={() => setOpen(false)}></ModalAuth>
+    </Box>
   );
 })
 
@@ -83,20 +109,45 @@ const MovieLike: React.NamedExoticComponent<IMovieButtons> = memo(function Movie
   const dispatch = useDispatch();
   const storage = useStorage();
   const handleLike = (event : React.ChangeEvent<unknown>) => {
-    if (!isAuth) return;
+    if (!isAuth)
+      return handleOpen();
     let target = event.target as HTMLElement;
     if (target.nodeName === 'path') 
-      target = target.parentNode as HTMLElement;
+      target = target.parentNode?.parentNode as HTMLElement;
     dispatch(toggleLike(Number(target.id)));
     setInStorage(storage, target.parentElement?.id, BUTTONS.FAVORITE);
   }
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => 
+    isAuth === true ? dispatch(toggleAuth()) : setOpen(true);
   return (
-    <>
-      {like
-          ? <FavoriteIcon onClick={handleLike} fontSize="large" id={String(index)} />
-          : <FavoriteBorderIcon onClick={handleLike} fontSize="large" id={String(index)}/>
+    <Box sx={{position: "relative"}}>
+      <Fade in={like}>
+        {
+          <FavoriteIcon
+            onClick={handleLike}
+            fontSize="large"
+            id={String(index)}
+            sx={{cursor: "pointer"}}
+          />
         }
-    </>
+      </Fade>
+      <Fade in={!like}>
+        {
+          <FavoriteBorderIcon
+            onClick={handleLike}
+            fontSize="large"
+            id={String(index)}
+            sx={{
+              position: "absolute",
+              right: "0",
+              cursor: "pointer"
+            }}
+          />
+        }
+      </Fade>
+      <ModalAuth open={open} handleClose={() => setOpen(false)}></ModalAuth>
+    </Box>
   );
 })
 
